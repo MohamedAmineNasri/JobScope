@@ -1,0 +1,34 @@
+// app.use('/api', userRoutes)
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const app = express();
+const bodyParser = require("body-parser");
+require("dotenv").config();
+const cookieParser = require("cookie-parser");
+const errorHandler = require("./middleware/error");
+
+// import routues
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+
+app.use(cors());
+app.use(bodyParser());
+app.use(cookieParser());
+
+const PORT = process.env.PORT || 8000;
+
+app.use("/api", authRoutes);
+app.use("/api", userRoutes);
+
+// error middleware
+app.use(errorHandler);
+
+//MongoDB connection + server
+mongoose
+  .connect("mongodb://127.0.0.1:27017/JOBSCOPE")
+  .then(() => {
+    console.log("Connected To DB");
+    app.listen(PORT, () => console.log("Server is running"));
+  })
+  .catch((err) => console.log(err));
