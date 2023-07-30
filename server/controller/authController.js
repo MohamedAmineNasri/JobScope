@@ -2,6 +2,7 @@ const user = require('../models/user');
 const User = require('../models/user')
 const ErrorResponse = require ('../utils/errorResponse')
 
+//authController
 
 exports.signup = async (req, res, next) => {
     const { email } = req.body;
