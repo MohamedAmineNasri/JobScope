@@ -11,6 +11,8 @@ const errorHandler = require("./middleware/error");
 // import routues
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const jobtypeRoutes = require("./routes/jobtypeRoutes");
+const jobRoutes = require("./routes/jobtRoutes");
 
 app.use(cors());
 app.use(bodyParser());
@@ -20,6 +22,8 @@ const PORT = process.env.PORT || 8000;
 
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
+app.use("/api", jobtypeRoutes);
+app.use("/api", jobRoutes);
 
 // error middleware
 app.use(errorHandler);
