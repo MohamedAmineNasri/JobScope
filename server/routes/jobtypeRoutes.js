@@ -10,7 +10,7 @@ const router = express.Router();
 router.post("/type/create", isAuthenticated, isAdmin, createJobType);
 
 // /api/type/jobs
-router.get("/type/jobs", isAuthenticated, allJobType);
+router.get("/type/jobs", allJobType);
 
 // /api/type/update/type_id
 router.put("/type/update/:type_id", isAuthenticated, isAdmin, updateJobType);
