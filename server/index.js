@@ -1,9 +1,7 @@
-// app.use('/api', userRoutes)
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const app = express();
-const bodyParser = require("body-parser");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/error");
@@ -15,7 +13,8 @@ const jobtypeRoutes = require("./routes/jobtypeRoutes");
 const jobRoutes = require("./routes/jobtRoutes");
 
 app.use(cors());
-app.use(bodyParser());
+app.use(express.json()); // Use built-in middleware for parsing JSON data
+app.use(express.urlencoded({ extended: true })); // Use built-in middleware for parsing URL-encoded data
 app.use(cookieParser());
 
 const PORT = process.env.PORT || 8000;
