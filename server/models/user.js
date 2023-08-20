@@ -39,42 +39,58 @@ const jobHistorySchema = new mongoose.Schema({
 },{timestamps: true})
 
 
-const userSchema = new mongoose.Schema({
-    firstName: {
-        type:String,
+const userSchema = new mongoose.Schema(
+    {
+        firstName: {
+        type: String,
         trim: true,
-        required: [true, 'first name is required'],
-        maxlength:32,
-    },
-    lastName: {
-        type:String,
+        required: function () {
+            return this.role === "user" || this.role === "admin";
+        },
+        maxlength: 32,
+        },
+        lastName: {
+        type: String,
         trim: true,
-        required: [true, 'last name is required'],
-        maxlength:32,
-    },
-    email: {
-        type:String,
+        required: function () {
+            return this.role === "user" || this.role === "admin";
+        },
+        maxlength: 32,
+        },
+        userName: {
+        type: String,
         trim: true,
-        required: [true, 'email is required'],
+        required: function () {
+            return this.role === "company";
+        },
+        maxlength: 32,
+        },
+        email: {
+        type: String,
+        trim: true,
+        required: [true, "email is required"],
         unique: true,
         match: [
             /^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/,
-            'Please provide a valid email address',
-        ]
-    },
-    password: {
-        type:String,
+            "Please provide a valid email address",
+        ],
+        },
+        password: {
+        type: String,
         trim: true,
-        required: [true, 'password is required'],
-        minlength:[6, 'password must at least (6) caracters'],
+        required: [true, "password is required"],
+        minlength: [6, "password must be at least 6 characters"],
+        },
+        jobHistory: [jobHistorySchema],
+        role: {
+        type: String,
+        enum: ["user", "admin", "company"],
+        default: "admin",
+        },
     },
-    jobHistory: [jobHistorySchema],
-    role:{
-        type:String,
-        enum: ['user','admin','company'],
-        default:'admin'
-    }
-},{timestamps: true})
+    { timestamps: true }
+    );
+
 
 //encrypting password before saving
 userSchema.pre('save', async function(next){
