@@ -2,28 +2,63 @@ const user = require('../models/user');
 const User = require('../models/user')
 const ErrorResponse = require ('../utils/errorResponse')
 
+
 //authController
 
-exports.signup = async (req, res, next) => {
-    const { email } = req.body;
-    try {
-        const userExist = await User.findOne({ email });
-        if (userExist) {
-        return res.status(400).json({
-            success: false,
-            message: "E-mail already registered",
-        });
-        }
+// exports.signup = async (req, res, next) => {
+//     const { email } = req.body;
+//     try {
+//         const userExist = await User.findOne({ email });
+//         if (userExist) {
+//         return res.status(400).json({
+//             success: false,
+//             message: "E-mail already registered",
+//         });
+//         }
 
-        const user = await User.create(req.body);
-        res.status(201).json({
-        success: true,
-        user,
-        });
-    } catch (error) {
-        next(error);
+//         const user = await User.create(req.body);
+//         res.status(201).json({
+//         success: true,
+//         user,
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+exports.signup = async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const userExist = await User.findOne({ email });
+    if (userExist) {
+      return res.status(400).json({
+        success: false,
+        message: "E-mail already registered",
+      });
     }
+
+    const { firstName, lastName, password, role } = req.body;
+    const cv = req.file ? req.file.path : null; // Get the CV file path if uploaded
+
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password,
+      role,
+      cv, // Assign the CV path to the user
+    });
+
+    res.status(201).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
+
+
+
 exports.signin = async (req, res, next) => {
     try {
         const { email, password } = req.body;

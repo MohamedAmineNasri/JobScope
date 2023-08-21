@@ -87,6 +87,9 @@ const userSchema = new mongoose.Schema(
         enum: ["user", "admin", "company"],
         default: "admin",
         },
+         cv: {
+      type: String, // Store the path to the uploaded CV file
+    },
     },
     { timestamps: true }
     );
