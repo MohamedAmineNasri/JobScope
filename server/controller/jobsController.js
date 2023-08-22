@@ -3,17 +3,48 @@ const JobType = require("../models/jobTypeModel");
 const ErrorResponse = require("../utils/errorResponse");
 
 //create job 
+// exports.createJob = async (req, res, next) => {
+//   try {
+//     const job = await Job.create({
+//       title: req.body.title,
+//       description: req.body.description,
+//       salary: req.body.salary,
+//       location: req.body.location,
+//       available: req.body.available,
+//       JobType: req.body.JobType,
+//       user: req.user.id,
+//     });
+//     res.status(201).json({
+//       success: true,
+//       job,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 exports.createJob = async (req, res, next) => {
   try {
+    const { title, description, salary, location, available, JobType } =
+      req.body;
+
+    const year = req.body.year; // Get the year field from the request body
+    let specialization = null; // Default to no specialization
+    if (["fourth", "fifth"].includes(year)) {
+      specialization = req.body.specialization; // Assign specialization if targeting fourth or fifth year
+    }
+
     const job = await Job.create({
-      title: req.body.title,
-      description: req.body.description,
-      salary: req.body.salary,
-      location: req.body.location,
-      available: req.body.available,
-      JobType: req.body.JobType,
+      title,
+      description,
+      salary,
+      location,
+      available,
+      JobType,
       user: req.user.id,
+      year,
+      specialization,
     });
+
     res.status(201).json({
       success: true,
       job,
@@ -22,6 +53,8 @@ exports.createJob = async (req, res, next) => {
     next(error);
   }
 };
+
+
 // //single job
 exports.singleJob = async (req, res, next) => {
   try {

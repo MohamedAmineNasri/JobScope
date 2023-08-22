@@ -5,26 +5,50 @@ const ErrorResponse = require ('../utils/errorResponse')
 
 //authController
 
-// exports.signup = async (req, res, next) => {
-//     const { email } = req.body;
-//     try {
-//         const userExist = await User.findOne({ email });
-//         if (userExist) {
-//         return res.status(400).json({
-//             success: false,
-//             message: "E-mail already registered",
-//         });
-//         }
 
-//         const user = await User.create(req.body);
-//         res.status(201).json({
-//         success: true,
-//         user,
-//         });
-//     } catch (error) {
-//         next(error);
+
+// exports.signup = async (req, res, next) => {
+//   const { email } = req.body;
+//   try {
+//     const userExist = await User.findOne({ email });
+//     if (userExist) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "E-mail already registered",
+//       });
 //     }
+
+//     const {
+//       firstName,
+//       lastName,
+//       password,
+//       role,
+//       year, // Add year field
+//       specialization, // Add specialization field
+//     } = req.body;
+
+//     const cv = req.file ? req.file.path : null; // Get the CV file path if uploaded
+
+//     const user = await User.create({
+//       firstName,
+//       lastName,
+//       email,
+//       password,
+//       role,
+//       cv,
+//       year, // Assign the year
+//       specialization, // Assign the specialization
+//     });
+
+//     res.status(201).json({
+//       success: true,
+//       user,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
 // };
+
 exports.signup = async (req, res, next) => {
   const { email } = req.body;
   try {
@@ -36,8 +60,14 @@ exports.signup = async (req, res, next) => {
       });
     }
 
-    const { firstName, lastName, password, role } = req.body;
-    const cv = req.file ? req.file.path : null; // Get the CV file path if uploaded
+    const { firstName, lastName, password, role, year } = req.body;
+
+    const cv = req.file ? req.file.path : null;
+
+    let specialization = null; // Default to no specialization
+    if (["fourth", "fifth"].includes(year)) {
+      specialization = req.body.specialization; // Assign specialization if in fourth or fifth year
+    }
 
     const user = await User.create({
       firstName,
@@ -45,7 +75,9 @@ exports.signup = async (req, res, next) => {
       email,
       password,
       role,
-      cv, // Assign the CV path to the user
+      cv,
+      year,
+      specialization,
     });
 
     res.status(201).json({
@@ -56,7 +88,6 @@ exports.signup = async (req, res, next) => {
     next(error);
   }
 };
-
 
 
 exports.signin = async (req, res, next) => {

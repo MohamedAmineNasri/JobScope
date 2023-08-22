@@ -36,6 +36,40 @@ const jobSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    year: {
+      type: String,
+      enum: ["first", "second", "third", "fourth", "fifth"],
+      required: function () {
+        return this.available === true; // Optional: Only require year if the job is available
+      },
+    },
+    specialization: {
+      type: String,
+      enum: [
+        null, // Allow null value
+        "CLOUD",
+        "TWIN",
+        "DS",
+        "SIM",
+        "BI",
+        "SAE",
+        "WIN",
+        "IOSYS",
+        "SLEAM",
+        "INFINI",
+        "GAMIX",
+        "NIDS",
+        "SE",
+      ],
+      // Optional: Only require specialization for jobs targeting fourth and fifth year students
+      required: function () {
+        return (
+          this.year &&
+          ["fourth", "fifth"].includes(this.year) &&
+          this.available === true
+        );
+      },
+    },
   },
   { timestamps: true }
 );

@@ -40,59 +40,89 @@ const jobHistorySchema = new mongoose.Schema({
 
 
 const userSchema = new mongoose.Schema(
-    {
-        firstName: {
-        type: String,
-        trim: true,
-        required: function () {
-            return this.role === "user" || this.role === "admin";
-        },
-        maxlength: 32,
-        },
-        lastName: {
-        type: String,
-        trim: true,
-        required: function () {
-            return this.role === "user" || this.role === "admin";
-        },
-        maxlength: 32,
-        },
-        userName: {
-        type: String,
-        trim: true,
-        required: function () {
-            return this.role === "company";
-        },
-        maxlength: 32,
-        },
-        email: {
-        type: String,
-        trim: true,
-        required: [true, "email is required"],
-        unique: true,
-        match: [
-            /^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/,
-            "Please provide a valid email address",
-        ],
-        },
-        password: {
-        type: String,
-        trim: true,
-        required: [true, "password is required"],
-        minlength: [6, "password must be at least 6 characters"],
-        },
-        jobHistory: [jobHistorySchema],
-        role: {
-        type: String,
-        enum: ["user", "admin", "company"],
-        default: "admin",
-        },
-         cv: {
+  {
+    firstName: {
+      type: String,
+      trim: true,
+      required: function () {
+        return this.role === "user" || this.role === "admin";
+      },
+      maxlength: 32,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+      required: function () {
+        return this.role === "user" || this.role === "admin";
+      },
+      maxlength: 32,
+    },
+    userName: {
+      type: String,
+      trim: true,
+      required: function () {
+        return this.role === "company";
+      },
+      maxlength: 32,
+    },
+    email: {
+      type: String,
+      trim: true,
+      required: [true, "email is required"],
+      unique: true,
+      match: [
+        /^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/,
+        "Please provide a valid email address",
+      ],
+    },
+    password: {
+      type: String,
+      trim: true,
+      required: [true, "password is required"],
+      minlength: [6, "password must be at least 6 characters"],
+    },
+    jobHistory: [jobHistorySchema],
+    role: {
+      type: String,
+      enum: ["user", "admin", "company"],
+      default: "admin",
+    },
+    cv: {
       type: String, // Store the path to the uploaded CV file
     },
+    year: {
+      type: String,
+      enum: ["first", "second", "third", "fourth", "fifth"],
+      required: function () {
+        return this.role === "user";
+      },
     },
-    { timestamps: true }
-    );
+    specialization: {
+      type: String,
+      enum: [
+        null, // Allow null value
+        "CLOUD",
+        "TWIN",
+        "DS",
+        "SIM",
+        "BI",
+        "SAE",
+        "WIN",
+        "IOSYS",
+        "SLEAM",
+        "INFINI",
+        "GAMIX",
+        "NIDS",
+        "SE",
+      ],
+      // Only require specialization for fourth and fifth year students
+      required: function () {
+        return this.role === "user" && ["fourth", "fifth"].includes(this.year);
+      },
+    },
+  },
+  { timestamps: true }
+);
 
 
 //encrypting password before saving
