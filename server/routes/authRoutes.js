@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { signup, signin, logout, userProfile } = require("../controller/authController");
+const { signup, signin, logout, userProfile, signupCompany } = require("../controller/authController");
 const { isAuthenticated } = require("../middleware/auth");
 const multer = require('multer'); // Import multer for file upload
 const shortid = require("shortid");
+const path = require("path");
+
 
 
 
@@ -27,6 +29,10 @@ const upload = multer({ storage });
 router.post("/signin", signin);
 
 router.post("/signup", upload.single('cv'), signup);
+router.post("/signupcompany", signupCompany);
+const fs = require("fs");
+
+// ...
 
 
 // /api/logout

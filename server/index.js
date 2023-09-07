@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/error");
+const path = require("path"); // Import the 'path' module
+
 
 // import routues
 const authRoutes = require("./routes/authRoutes");
@@ -26,6 +28,9 @@ app.use("/api", jobRoutes);
 
 // error middleware
 app.use(errorHandler);
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 //MongoDB connection + server
 mongoose

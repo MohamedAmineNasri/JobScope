@@ -1,36 +1,26 @@
 const Job = require("../models/jobModel");
 const JobType = require("../models/jobTypeModel");
 const ErrorResponse = require("../utils/errorResponse");
+const nodemailer = require('nodemailer');
+const User = require("../models/user");
+const smtpTransport = require("nodemailer-smtp-transport");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
-//create job 
-// exports.createJob = async (req, res, next) => {
-//   try {
-//     const job = await Job.create({
-//       title: req.body.title,
-//       description: req.body.description,
-//       salary: req.body.salary,
-//       location: req.body.location,
-//       available: req.body.available,
-//       JobType: req.body.JobType,
-//       user: req.user.id,
-//     });
-//     res.status(201).json({
-//       success: true,
-//       job,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+
+// Set your SendinBlue API key
+let apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = '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';
+
+
 exports.createJob = async (req, res, next) => {
   try {
     const { title, description, salary, location, available, JobType } =
       req.body;
-
-    const year = req.body.year; // Get the year field from the request body
-    let specialization = null; // Default to no specialization
+    const year = req.body.year;
+    let specialization = null;
     if (["fourth", "fifth"].includes(year)) {
-      specialization = req.body.specialization; // Assign specialization if targeting fourth or fifth year
+      specialization = req.body.specialization;
     }
 
     const job = await Job.create({
@@ -45,6 +35,44 @@ exports.createJob = async (req, res, next) => {
       specialization,
     });
 
+    // Update the user's createdJobs array with the new job's ObjectId
+    await User.findByIdAndUpdate(
+      req.user.id,
+      { $push: { createdJobs: job._id } },
+      { new: true }
+    );
+
+    // Fetch matching users
+    const matchingUsers = await User.find({
+      year: year,
+      specialization: specialization,
+    });
+
+    // Send transactional emails to matching users using SendinBlue API
+    const sendSmtpEmailsApi = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    for (const user of matchingUsers) {
+      const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+      sendSmtpEmail.subject = "New Job Offer";
+      sendSmtpEmail.htmlContent = `<html><body><p>A new job offer has been created matching your year (${year}) and specialization (${specialization}). Check it out!</p></body></html>`;
+      sendSmtpEmail.sender = {
+        name: "Your Company",
+        email: "yourcompany@example.com",
+      };
+      sendSmtpEmail.to = [{ email: user.email, name: user.name }]; // Assuming user.name is available
+      sendSmtpEmail.replyTo = {
+        email: "replyto@yourcompany.com",
+        name: "Your Company",
+      };
+
+      try {
+        await sendSmtpEmailsApi.sendTransacEmail(sendSmtpEmail);
+        console.log("Email sent to:", user.email);
+      } catch (error) {
+        console.error("Error sending email to", user.email, ":", error);
+      }
+    }
+
     res.status(201).json({
       success: true,
       job,
@@ -53,6 +81,7 @@ exports.createJob = async (req, res, next) => {
     next(error);
   }
 };
+
 
 
 // //single job
@@ -76,6 +105,30 @@ exports.updateJob = async (req, res, next) => {
     })
       .populate("JobType", "jobTypeName")
       .populate("user", "firstName lastName");
+    res.status(200).json({
+      success: true,
+      job,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update job availability by ID
+exports.updateAvailability = async (req, res, next) => {
+  try {
+    const job = await Job.findById(req.params.job_id);
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found",
+      });
+    }
+
+    job.available = req.body.available; // Update availability based on the request body
+    await job.save();
+
     res.status(200).json({
       success: true,
       job,
@@ -141,7 +194,7 @@ exports.showJobs = async (req, res, next) => {
       //.populate("JobType", "jobTypeName")
       //.populate("user", "firstName")
       .skip(pageSize * (page - 1))
-      .limit(pageSize);
+      //.limit(pageSize);
     res.status(200).json({
       success: true,
       jobs,
@@ -177,6 +230,12 @@ exports.deleteJob = async (req, res, next) => {
     next(new ErrorResponse("server error", 500));
   }
 };
+
+
+
+
+
+
 // exports.deleteJob = async (req, res, next) => {
 //   try {
 //     const job = await Job.findByIdAndRemove(req.params._id);

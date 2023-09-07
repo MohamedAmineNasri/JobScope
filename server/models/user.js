@@ -5,38 +5,44 @@ const jwt = require("jsonwebtoken");
 
 
 
-const jobHistorySchema = new mongoose.Schema({
+const jobHistorySchema = new mongoose.Schema(
+  {
     title: {
-        type:String,
-        trim: true,
-        maxlength:70,
+      type: String,
+      trim: true,
+      maxlength: 70,
     },
     description: {
-        type:String,
-        trim: true,
+      type: String,
+      trim: true,
     },
     salary: {
-        type:String,
-        trim: true,
+      type: String,
+      trim: true,
     },
     location: {
-        type:String,
+      type: String,
     },
     interviewDate: {
-        type: Date,
+      type: Date,
     },
     applicationStatus: {
-        type: String,
-        enum: ['pending', 'accepted', 'rejected'],
-        default: 'pending'
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending",
     },
     user: {
-        type:ObjectId,
-        ref:"User",
-        required: true,
+      type: ObjectId,
+      ref: "User",
+      required: true,
     },
-
-},{timestamps: true})
+    job: {
+      type: ObjectId,
+      ref: "Job",
+    },
+  },
+  { timestamps: true }
+);
 
 
 const userSchema = new mongoose.Schema(
@@ -97,6 +103,12 @@ const userSchema = new mongoose.Schema(
         return this.role === "user";
       },
     },
+    createdJobs: [
+      {
+        type: ObjectId,
+        ref: "Job",
+      },
+    ],
     specialization: {
       type: String,
       enum: [

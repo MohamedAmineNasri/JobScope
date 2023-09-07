@@ -5,50 +5,6 @@ const ErrorResponse = require ('../utils/errorResponse')
 
 //authController
 
-
-
-// exports.signup = async (req, res, next) => {
-//   const { email } = req.body;
-//   try {
-//     const userExist = await User.findOne({ email });
-//     if (userExist) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "E-mail already registered",
-//       });
-//     }
-
-//     const {
-//       firstName,
-//       lastName,
-//       password,
-//       role,
-//       year, // Add year field
-//       specialization, // Add specialization field
-//     } = req.body;
-
-//     const cv = req.file ? req.file.path : null; // Get the CV file path if uploaded
-
-//     const user = await User.create({
-//       firstName,
-//       lastName,
-//       email,
-//       password,
-//       role,
-//       cv,
-//       year, // Assign the year
-//       specialization, // Assign the specialization
-//     });
-
-//     res.status(201).json({
-//       success: true,
-//       user,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
 exports.signup = async (req, res, next) => {
   const { email } = req.body;
   try {
@@ -88,6 +44,42 @@ exports.signup = async (req, res, next) => {
     next(error);
   }
 };
+
+
+exports.signupCompany = async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const userExist = await User.findOne({ email });
+    if (userExist) {
+      return res.status(400).json({
+        success: false,
+        message: "E-mail already registered",
+      });
+    }
+
+    const { userName, password, role } = req.body;
+
+    // Additional fields for company signup
+    // ...
+
+    const user = await User.create({
+      userName,
+      email,
+      password,
+      role,
+      // Additional fields for company signup
+      // ...
+    });
+
+    res.status(201).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
 exports.signin = async (req, res, next) => {
@@ -136,13 +128,19 @@ exports.logout = (req, res, next) => {
     });
 };
 
-
-
-// user profile 
 exports.userProfile = async (req, res, next) => {
-    const user = await User.findById( req.user.id ).select('-password')
+  try {
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('createdJobs') // Populate the createdJobs field
+      .exec();
+
     res.status(200).json({
-        success: true, 
-        user
-    })
-}
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
