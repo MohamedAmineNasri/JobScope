@@ -10,7 +10,7 @@ const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
 // Set your SendinBlue API key
 let apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = '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';
+apiKey.apiKey = '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';
 
 
 exports.createJob = async (req, res, next) => {
@@ -194,7 +194,7 @@ exports.showJobs = async (req, res, next) => {
       //.populate("JobType", "jobTypeName")
       //.populate("user", "firstName")
       .skip(pageSize * (page - 1))
-      //.limit(pageSize);
+      .limit(pageSize);
     res.status(200).json({
       success: true,
       jobs,
@@ -203,6 +203,72 @@ exports.showJobs = async (req, res, next) => {
       count,
       setUniqueLocation,
       
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+exports.showJobsAll = async (req, res, next) => {
+  //enable search
+  const keyword = req.query.keyword
+    ? {
+        title: {
+          $regex: req.query.keyword,
+          $options: "i",
+        },
+      }
+    : {};
+
+  // filter jobs by category ids
+  let ids = [];
+  const jobTypeCategory = await JobType.find({}, { _id: 1 });
+  jobTypeCategory.forEach((cat) => {
+    ids.push(cat._id);
+  });
+
+  let cat = req.query.cat;
+  let categ = cat !== "" ? cat : ids;
+
+  //jobs by location
+  let locations = [];
+  const jobByLocation = await Job.find({}, { location: 1 });
+  jobByLocation.forEach((val) => {
+    locations.push(val.location);
+  });
+  let setUniqueLocation = [...new Set(locations)];
+  let location = req.query.location;
+  let locationFilter = location !== "" ? location : setUniqueLocation;
+
+  //enable pagination
+  const pageSize = 5;
+  const page = Number(req.query.pageNumber) || 1;
+  // const count = await Job.find({}).estimatedDocumentCount();
+  const count = await Job.find({ ...keyword, JobType: categ }).countDocuments();
+  // const count = await Job.find({
+  //   ...keyword,
+  //   JobType: categ,
+  //   location: locationFilter,
+  // }).countDocuments();
+
+  try {
+    //const jobs = await Job.find({ ...keyword, jobType: categ, location: locationFilter })
+    const jobs = await Job.find({
+      ...keyword,
+      JobType: categ,
+      // location: locationFilter,
+    })
+      //.sort({ createdAt: -1 })
+      //.populate("JobType", "jobTypeName")
+      //.populate("user", "firstName")
+      .skip(pageSize * (page - 1))
+      //.limit(pageSize);
+    res.status(200).json({
+      success: true,
+      jobs,
+      page,
+      pages: Math.ceil(count / pageSize),
+      count,
+      setUniqueLocation,
     });
   } catch (error) {
     next(error);

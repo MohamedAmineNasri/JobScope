@@ -6,7 +6,7 @@ const { isAuthenticated, isAdmin } = require("../middleware/auth");
 //user routes
 
 // /api/allusers
-router.get("/allUsers",  isAuthenticated, allUsers);
+router.get("/allUsers", allUsers);
 
 // /api/user/id
 router.get("/user/:id", isAuthenticated, singleUser);

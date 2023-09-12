@@ -2,7 +2,11 @@ const User = require("../models/user");
 const ErrorResponse = require("../utils/errorResponse");
 const Job = require("../models/jobModel");
 const SibApiV3Sdk = require('sib-api-v3-sdk'); // Import the SendinBlue API library
+const smtpTransport = require("nodemailer-smtp-transport");
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
+let apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = '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';
 
 //load all users
 exports.allUsers = async (req, res, next) => {
@@ -178,11 +182,71 @@ exports.getUsersAppliedToJob = async (req, res, next) => {
 //   }
 // };
 
+// exports.updateUserApplicationStatus = async (req, res, next) => {
+//   try {
+//     const userId = req.params.userId;
+//     const jobId = req.params.jobId;
+//     const { applicationStatus } = req.body;
+
+//     // Find the user and their job history entry
+//     const user = await User.findById(userId);
+
+//     // Find the job history entry with the given jobId
+//     const jobHistoryEntry = user.jobHistory.find(
+//       (job) => job._id.toString() === jobId
+//     );
+
+//     if (!jobHistoryEntry) {
+//       return res.status(404).json({ error: "Job history entry not found." });
+//     }
+
+//     // Save the original application status for comparison
+//     const originalStatus = jobHistoryEntry.applicationStatus;
+
+//     // Update the application status
+//     jobHistoryEntry.applicationStatus = applicationStatus;
+//     await user.save();
+
+//     // Check if the application status has changed
+//     if (applicationStatus !== originalStatus) {
+//       // Send an email to the user about the status change
+//       const sendSmtpEmailsApi = new SibApiV3Sdk.TransactionalEmailsApi();
+
+//       const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+//       sendSmtpEmail.subject = "Your Job";
+//       sendSmtpEmail.htmlContent = `<html><body><p>Your application status has been updated to: ${applicationStatus}</p></body></html>`;
+//       sendSmtpEmail.sender = {
+//         name: "Your Company",
+//         email: "yourcompany@example.com",
+//       };
+//       sendSmtpEmail.to = [{ email: user.email, name: user.name }];
+//       sendSmtpEmail.replyTo = {
+//         email: "replyto@yourcompany.com",
+//         name: "Your Company",
+//       };
+
+//       try {
+//         await sendSmtpEmailsApi.sendTransacEmail(sendSmtpEmail);
+//         console.log("Email sent to:", user.email);
+//       } catch (error) {
+//         console.error("Error sending email to", user.email, ":", error);
+//       }
+//     }
+
+//     res.status(200).json({ success: true });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 exports.updateUserApplicationStatus = async (req, res, next) => {
   try {
     const userId = req.params.userId;
     const jobId = req.params.jobId;
     const { applicationStatus } = req.body;
+
+    console.log("Received request to update application status.");
+    console.log("UserID:", userId);
+    console.log("JobID:", jobId);
 
     // Find the user and their job history entry
     const user = await User.findById(userId);
@@ -193,6 +257,7 @@ exports.updateUserApplicationStatus = async (req, res, next) => {
     );
 
     if (!jobHistoryEntry) {
+      console.log("Job history entry not found.");
       return res.status(404).json({ error: "Job history entry not found." });
     }
 
@@ -209,10 +274,10 @@ exports.updateUserApplicationStatus = async (req, res, next) => {
       const sendSmtpEmailsApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
       const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-      sendSmtpEmail.subject = "Your Job";
+      sendSmtpEmail.subject = "Your application status has been updated";
       sendSmtpEmail.htmlContent = `<html><body><p>Your application status has been updated to: ${applicationStatus}</p></body></html>`;
       sendSmtpEmail.sender = {
-        name: "Your Company",
+        name: "Esprit",
         email: "yourcompany@example.com",
       };
       sendSmtpEmail.to = [{ email: user.email, name: user.name }];
@@ -229,11 +294,14 @@ exports.updateUserApplicationStatus = async (req, res, next) => {
       }
     }
 
+    console.log("Application status updated successfully.");
     res.status(200).json({ success: true });
   } catch (error) {
+    console.error("Error updating application status:", error);
     next(error);
   }
 };
+
 
 // exports.getUsersAppliedToJob = async (req, res, next) => {
 //   try {
